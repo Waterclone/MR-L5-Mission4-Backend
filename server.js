@@ -10,7 +10,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const mongoUrl = "mongodb://localhost:27017";
-const dbName = "carDatabase";
+const dbName = "cars";
 
 const customVisionEndpoint = process.env.PREDICTION_ENDPOINT;
 const customVisionKey = process.env.PREDICTION_KEY;
@@ -40,12 +40,12 @@ app.post("/upload", upload.single("carImage"), async (req, res) => {
     await client.connect();
     const db = client.db(dbName);
 
-    const collectionName = carType.toLowerCase();
-    const cars = await db.collection(collectionName).find({}).toArray();
+    const carsCollection = db.collection("cars");
+    const matchingCars = await carsCollection.find({ type: carType }).toArray();
 
     client.close();
 
-    res.json({ carType, cars });
+    res.json({ carType, cars: matchingCars });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
